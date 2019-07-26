@@ -21,15 +21,31 @@ router.get('/:id',
     async (req: Request, res: Response) => {
     const { id } = req.params;
     const item = await FeedItem.findByPk(id);
-    res.send(item);
+
+    if (!item) {
+      res.status(204).send({ message: 'Item with id of ' + id + ' not found.' });
+    } else {
+      res.send(item);
+    }
 });
 
 // update a specific resource
 router.patch('/:id',
     requireAuth,
     async (req: Request, res: Response) => {
-        // @TODO try it yourself
-        res.send(500).send('not implemented');
+        const { id } = req.params;
+        const { caption, url } = req.body;
+        const item = await FeedItem.findByPk(id);
+        item.caption = caption;
+        item.url = url;
+
+        const savedItem = await item.save().catch(error => {
+          res.status(500).send({ message: error });
+          return;
+        });
+
+        savedItem.url = AWS.getGetSignedUrl(savedItem.url);
+        res.status(200).send(savedItem);
 });
 
 
