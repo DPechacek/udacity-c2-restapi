@@ -39,10 +39,7 @@ router.patch('/:id',
         item.caption = caption;
         item.url = url;
 
-        const savedItem = await item.save().catch(error => {
-          res.status(500).send({ message: error });
-          return;
-        });
+        const savedItem = await item.save();
 
         savedItem.url = AWS.getGetSignedUrl(savedItem.url);
         res.status(200).send(savedItem);
